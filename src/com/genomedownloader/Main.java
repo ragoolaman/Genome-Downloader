@@ -41,6 +41,8 @@ public class Main extends Application{
     private String genomeCode;
 
     private void FTPGet(String genomeName, String genomeLink) throws IllegalStateException, IOException, FTPIllegalReplyException, FTPException, FTPDataTransferException, FTPAbortedException, FTPListParseException {
+        gcf = true;
+        System.out.println("in the get");
         String[] proclink = genomeLink.split("//");
         String finallink = proclink[1];
         String[] procfinallink = finallink.split("/");
@@ -52,7 +54,7 @@ public class Main extends Application{
         client.login("anonymous", "abc123");
         String[] thisbetterwork = procfinallink[7].split("_");
         String test = "/" + procfinallink[1] + "/" + procfinallink[2] + "/" + "GCF"/*procfinallink[3]*/ + "/" + procfinallink[4] + "/" + procfinallink[5] + "/" + procfinallink[6] + "/GCF_" + thisbetterwork[1] + "_" + thisbetterwork[2];
-        client.changeDirectory(test);
+        System.out.println("Conn achieved");
         try
         {
             client.changeDirectory(test);
@@ -63,6 +65,7 @@ public class Main extends Application{
             gcf = false;
             client.changeDirectory(test);
         }
+        System.out.println("Dir changed");
         String folderNew;
         folderNew = genomeName;
         folderNew = folderNew.replace("/", "_");
@@ -70,18 +73,59 @@ public class Main extends Application{
         downLabel.setText(genomeName);
         bar.setProgress(0.0);
         ind.setProgress(0.0);
+        System.out.println("Bar reset");
         boolean newFolder = (new File(dir + "\\" + folderNew).mkdir());
-        if(gcf)
+        switch (thisbetterwork.length)
         {
-            genomeCode = "GCF_" + thisbetterwork[1] + "_" + thisbetterwork[2];
-        } else
-        {
-            genomeCode = "GCA_" + thisbetterwork[1] + "_" + thisbetterwork[2];
+            case 1:
+                System.out.println("1");
+                break;
+            case 2:
+                System.out.println("2");
+                if(gcf)
+                {
+                    genomeCode = "GCF_" + thisbetterwork[1] + "_" + thisbetterwork[2];
+                } else
+                {
+                    genomeCode = "GCA_" + thisbetterwork[1] + "_" + thisbetterwork[2];
+                }
+                break;
+            case 3:
+                System.out.println("3");
+                if(gcf)
+                {
+                    genomeCode = "GCF_" + thisbetterwork[1] + "_" + thisbetterwork[2];
+                } else
+                {
+                    genomeCode = "GCA_" + thisbetterwork[1] + "_" + thisbetterwork[2];
+                }
+                break;
+            case 4:
+                if(gcf)
+                {
+                    genomeCode = "GCF_" + thisbetterwork[1] + "_" + thisbetterwork[2] + "_" + thisbetterwork[3];
+                } else
+                {
+                    genomeCode = "GCA_" + thisbetterwork[1] + "_" + thisbetterwork[2] + "_" + thisbetterwork[3];
+                }
+                System.out.println("4");
+                break;
+            case 5:
+                System.out.println("5");
+                break;
+            case 6:
+                System.out.println("6");
+                break;
+            default:
+                System.out.println("You messed up my program! HOW DARETH YE... FATAL ERROR REDOWNLOAD FROM GITHUB OR WHEREVER I PUT THIS");
+                break;
         }
+
         genomeCode.trim();
         if (!newFolder) {
         }
         client.download(genomeCode + "_assembly_report.txt", new java.io.File(dir + "\\" + genomeName + "\\" + "Assembly Report.txt"));
+        System.out.println(genomeCode + "_assembly");
         bar.setProgress(0.2);
         ind.setProgress(0.2);
         client.download(genomeCode + "_assembly_stats.txt", new java.io.File(dir + "\\" + genomeName + "\\" + "Assembly Stats.txt"));
@@ -273,8 +317,25 @@ public class Main extends Application{
             }
             if(!genomeList.contains(genomeDownListComp)) {
                 genomeList.add(genomeDownListComp);
+                System.out.println(genomeDownListComp);
             }
-            finalSqlCode.add(sqlCode.get(0));
+            String url = "jdbc:mysql://216.105.170.143:3306/genbank?useSSL=false";
+            String username = "java";
+            String password = "abc123";
+            System.out.println("working");
+            //Establish the connection to the SQL Database
+            try (Connection connection = DriverManager.getConnection(url, username, password)) {
+                Statement stmt = connection.createStatement();
+                rs = stmt.executeQuery("SELECT * FROM genbankFile WHERE name LIKE '" + genomeDownListComp + "' AND strain LIKE '" + genomeArray[1] + "'");
+                while(rs.next())
+                {
+                    System.out.println(rs.getString(3));
+                    finalSqlCode.add(rs.getString(3));
+                }
+            } catch (SQLException e)
+            {
+                e.printStackTrace();
+            }
         });
         //Add the remove function for the download Queue
         remove.setOnAction(action -> {
@@ -319,28 +380,37 @@ public class Main extends Application{
         });
         //Add the download action, wherein the FTP method is informed to Get the genomes in the download queue
         down.setOnAction((ActionEvent ae) -> {
-          /*  Task task = new Task<Void>() {
+            Task task = new Task<Void>() {
                 @Override
-                public Void call() throws Exception {*/
+                public Void call() throws Exception {
                     //Declare location for JDBC Drivers, sql username and sql password
                     String url = "jdbc:mysql://216.105.170.143:3306/genbank?useSSL=false";
                     String username = "java";
                     String password = "abc123";
+                    System.out.println("working");
                     //Establish the connection to the SQL Database
                     try (Connection connection = DriverManager.getConnection(url, username, password)) {
                         Statement stmt = connection.createStatement();
+                        System.out.println("conn made");
                         for (String i : genomeList) {
+                            System.out.println("in the for");
                             String code = finalSqlCode.get(genomeList.indexOf(i));
+                            System.out.println(finalSqlCode.get(genomeList.indexOf(i)));
                             rs = stmt.executeQuery("SELECT * FROM genbankFile WHERE name LIKE '" + i + "' AND link LIKE '" + code + "'");
+                            System.out.println("rs created" + i + code);
                             while (rs.next())
                                 try {
+                                    System.out.println("About to run later");
                                     Platform.runLater(() -> {
                                         try {
                                             downLabel.setText(rs.getString(1));
+                                            System.out.println("down text set");
                                         } catch (SQLException e) {
                                             e.printStackTrace();
                                         }
                                     });
+
+                                    System.out.println("entering get");
                                     FTPGet(rs.getString(1), rs.getString(3).trim());/*).start();*/
                                     counter1++;
                                     genomeLists = genomeList.size();
@@ -359,11 +429,11 @@ public class Main extends Application{
                     } catch (SQLException e) {
                         throw new IllegalStateException("Cannot connect the database!", e);
                     }
-             //       return null;
-               // }
-           // };
-          //  Thread th = new Thread(task);
-          //  th.start();
+                    return null;
+                }
+            };
+            Thread th = new Thread(task);
+            th.start();
             ;
         });
         //The current function is to tell the FTP method where to download the genomes to
