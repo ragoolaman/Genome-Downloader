@@ -42,7 +42,6 @@ public class Main extends Application{
 
     private void FTPGet(String genomeName, String genomeLink) throws IllegalStateException, IOException, FTPIllegalReplyException, FTPException, FTPDataTransferException, FTPAbortedException, FTPListParseException {
         gcf = true;
-        System.out.println("in the get");
         String[] proclink = genomeLink.split("//");
         String finallink = proclink[1];
         String[] procfinallink = finallink.split("/");
@@ -54,7 +53,6 @@ public class Main extends Application{
         client.login("anonymous", "abc123");
         String[] thisbetterwork = procfinallink[7].split("_");
         String test = "/" + procfinallink[1] + "/" + procfinallink[2] + "/" + "GCF"/*procfinallink[3]*/ + "/" + procfinallink[4] + "/" + procfinallink[5] + "/" + procfinallink[6] + "/GCF_" + thisbetterwork[1] + "_" + thisbetterwork[2];
-        System.out.println("Conn achieved");
         try
         {
             client.changeDirectory(test);
@@ -65,7 +63,6 @@ public class Main extends Application{
             gcf = false;
             client.changeDirectory(test);
         }
-        System.out.println("Dir changed");
         String folderNew;
         folderNew = genomeName;
         folderNew = folderNew.replace("/", "_");
@@ -73,15 +70,14 @@ public class Main extends Application{
         downLabel.setText(genomeName);
         bar.setProgress(0.0);
         ind.setProgress(0.0);
-        System.out.println("Bar reset");
         boolean newFolder = (new File(dir + "\\" + folderNew).mkdir());
         switch (thisbetterwork.length)
         {
             case 1:
-                System.out.println("1");
+
                 break;
             case 2:
-                System.out.println("2");
+
                 if(gcf)
                 {
                     genomeCode = "GCF_" + thisbetterwork[1] + "_" + thisbetterwork[2];
@@ -91,7 +87,7 @@ public class Main extends Application{
                 }
                 break;
             case 3:
-                System.out.println("3");
+
                 if(gcf)
                 {
                     genomeCode = "GCF_" + thisbetterwork[1] + "_" + thisbetterwork[2];
@@ -108,16 +104,16 @@ public class Main extends Application{
                 {
                     genomeCode = "GCA_" + thisbetterwork[1] + "_" + thisbetterwork[2] + "_" + thisbetterwork[3];
                 }
-                System.out.println("4");
+
                 break;
             case 5:
-                System.out.println("5");
+
                 break;
             case 6:
-                System.out.println("6");
+
                 break;
             default:
-                System.out.println("You messed up my program! HOW DARETH YE... FATAL ERROR REDOWNLOAD FROM GITHUB OR WHEREVER I PUT THIS");
+                System.out.println("messed up my program! HOW DARETH YE... FATAL ERROR REDOWNLOAD FROM GITHUB OR WHEREVER I PUT THIS");
                 break;
         }
 
@@ -125,7 +121,6 @@ public class Main extends Application{
         if (!newFolder) {
         }
         client.download(genomeCode + "_assembly_report.txt", new java.io.File(dir + "\\" + genomeName + "\\" + "Assembly Report.txt"));
-        System.out.println(genomeCode + "_assembly");
         bar.setProgress(0.2);
         ind.setProgress(0.2);
         client.download(genomeCode + "_assembly_stats.txt", new java.io.File(dir + "\\" + genomeName + "\\" + "Assembly Stats.txt"));
@@ -137,10 +132,11 @@ public class Main extends Application{
         client.download(genomeCode + "_genomic.gbff.gz", new java.io.File(dir + "\\" + genomeName + "\\" + "Genomic GBFF.gz"));
         bar.setProgress(0.8);
         ind.setProgress(0.8);
-        if (gcf)
+        try
         {
             client.download(genomeCode + "_protein.faa.gz", new java.io.File(dir + "\\" + genomeName + "\\" + "Protein FAA.gz"));
-        }
+        } catch (IllegalStateException|IOException|FTPIllegalReplyException|FTPException|FTPDataTransferException|FTPAbortedException u)
+        {}
         bar.setProgress(1.0);
         ind.setProgress(1.0);
 
@@ -317,19 +313,16 @@ public class Main extends Application{
             }
             if(!genomeList.contains(genomeDownListComp)) {
                 genomeList.add(genomeDownListComp);
-                System.out.println(genomeDownListComp);
             }
             String url = "jdbc:mysql://216.105.170.143:3306/genbank?useSSL=false";
             String username = "java";
             String password = "abc123";
-            System.out.println("working");
             //Establish the connection to the SQL Database
             try (Connection connection = DriverManager.getConnection(url, username, password)) {
                 Statement stmt = connection.createStatement();
                 rs = stmt.executeQuery("SELECT * FROM genbankFile WHERE name LIKE '" + genomeDownListComp + "' AND strain LIKE '" + genomeArray[1] + "'");
                 while(rs.next())
                 {
-                    System.out.println(rs.getString(3));
                     finalSqlCode.add(rs.getString(3));
                 }
             } catch (SQLException e)
@@ -387,30 +380,22 @@ public class Main extends Application{
                     String url = "jdbc:mysql://216.105.170.143:3306/genbank?useSSL=false";
                     String username = "java";
                     String password = "abc123";
-                    System.out.println("working");
                     //Establish the connection to the SQL Database
                     try (Connection connection = DriverManager.getConnection(url, username, password)) {
                         Statement stmt = connection.createStatement();
-                        System.out.println("conn made");
                         for (String i : genomeList) {
-                            System.out.println("in the for");
                             String code = finalSqlCode.get(genomeList.indexOf(i));
-                            System.out.println(finalSqlCode.get(genomeList.indexOf(i)));
                             rs = stmt.executeQuery("SELECT * FROM genbankFile WHERE name LIKE '" + i + "' AND link LIKE '" + code + "'");
-                            System.out.println("rs created" + i + code);
                             while (rs.next())
                                 try {
-                                    System.out.println("About to run later");
                                     Platform.runLater(() -> {
                                         try {
                                             downLabel.setText(rs.getString(1));
-                                            System.out.println("down text set");
                                         } catch (SQLException e) {
                                             e.printStackTrace();
                                         }
                                     });
 
-                                    System.out.println("entering get");
                                     FTPGet(rs.getString(1), rs.getString(3).trim());/*).start();*/
                                     counter1++;
                                     genomeLists = genomeList.size();
