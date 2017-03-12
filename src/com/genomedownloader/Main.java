@@ -261,6 +261,15 @@ public class Main extends Application{
                 case 5:
                     genomeDownListComp = finalGenomeArray[0] + " " + finalGenomeArray[1] + " " + finalGenomeArray[2] + " " + finalGenomeArray[3] + " " + finalGenomeArray[4];
                     break;
+                case 6:
+                    genomeDownListComp = finalGenomeArray[0] + " " + finalGenomeArray[1] + " " + finalGenomeArray[2] + " " + finalGenomeArray[3] + " " + finalGenomeArray[4] + " " + finalGenomeArray[5];
+                    break;
+                case 7:
+                    genomeDownListComp = finalGenomeArray[0] + " " + finalGenomeArray[1] + " " + finalGenomeArray[2] + " " + finalGenomeArray[3] + " " + finalGenomeArray[4] + " " + finalGenomeArray[5] + " " + finalGenomeArray[6];
+                    break;
+                case 8:
+                    genomeDownListComp = finalGenomeArray[0] + " " + finalGenomeArray[1] + " " + finalGenomeArray[2] + " " + finalGenomeArray[3] + " " + finalGenomeArray[4] + " " + finalGenomeArray[5] + " " + finalGenomeArray[6] + " " + finalGenomeArray[7];
+                    break;
             }
             if(!genomeList.contains(genomeDownListComp)) {
                 genomeList.add(genomeDownListComp);
@@ -310,7 +319,7 @@ public class Main extends Application{
         });
         //Add the download action, wherein the FTP method is informed to Get the genomes in the download queue
         down.setOnAction((ActionEvent ae) -> {
-           /* Task task = new Task<Void>() {
+          /*  Task task = new Task<Void>() {
                 @Override
                 public Void call() throws Exception {*/
                     //Declare location for JDBC Drivers, sql username and sql password
@@ -350,10 +359,10 @@ public class Main extends Application{
                     } catch (SQLException e) {
                         throw new IllegalStateException("Cannot connect the database!", e);
                     }
-                 //   return null;
-              //  }
-       //     };
-        //    Thread th = new Thread(task);
+             //       return null;
+               // }
+           // };
+          //  Thread th = new Thread(task);
           //  th.start();
             ;
         });
